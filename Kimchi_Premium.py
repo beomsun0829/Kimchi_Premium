@@ -15,52 +15,48 @@ binance = ccxt.binance({'enableRateLimit': False})
 markets = list()
 markets.append(upbit.load_markets())
 markets.append(binance.load_markets())
-Markets_Ticker = []
-marketList = ['upbit_KRW','binance_USDT','binance_BUSD']
+USDTMarkets = {}
+KRWMarkets = {}
+marketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD']
 
-for index in markets :
+for market in markets :
     argsList = list()
-    for mktName in index.keys() :
-        if '/KRW' in mktName :
-            argsList.append(index)
-    Markets_Ticker.append(argsList)
-    
-    
-print(Markets_Ticker)    
+    for index in marketList :
+        
+        if index == 'Upbit_KRW' : 
+            for mktName in market.keys() :
+                if '/KRW' in mktName :
+                    name = re.sub("/KRW", "", mktName)
+                    argsList.append(name)
+            KRWMarkets[index] = argsList
+            
+        elif index == 'Binance_USDT':
+            for mktName in market.keys() :
+                if '/USDT' in mktName :
+                    name = re.sub("/USDT", "", mktName)
+                    argsList.append(name)
+            USDTMarkets[index] = argsList
+            
+        elif index == 'Binance_BUSD':
+            for mktName in market.keys() :
+                if '/BUSD' in mktName :
+                    name = re.sub("/BUSD", "", mktName)
+                    argsList.append(name)
+            USDTMarkets[index] = argsList
 
-
-TickerNumDict = {}
-
-
-
-"""
-for marketNAME, marketTickerList in USDTMarkets.items() :
+RefinedMarkets = {}
+for marketName, marketTickerList in KRWMarkets.items() :
     for TickerName in marketTickerList :
-        if TickerName in TickerNumDict :
-            TickerNumDict[TickerName] = TickerNumDict[TickerName] + 1
-        else :
-            TickerNumDict[TickerName] = 1
+        argsList = list()
+        if(TickerName in USDTMarkets['Binance_USDT']) :
+            argsList.append('Binance_USDT')
+        if(TickerName in USDTMarkets['Binance_BUSD']) :
+            argsList.append('Binance_BUSD')
+    
+        if(argsList != []) :
+            RefinedMarkets[TickerName] = argsList
 
-refinedUSDTMarkets = {}
-for marketName, marketTickerList in USDTMarkets.items() :
-    argsList = list()
-    for TickerName in marketTickerList :
-        if(TickerNumDict[TickerName] >= 2) :
-            argsList.append(TickerName)
-    refinedUSDTMarkets[marketName] = argsList
 
-upbitMT = list()
-binanMT = list()
-upbitMT = refinedUSDTMarkets['upbit']
-binanMT = refinedUSDTMarkets['binance']
-
-Market_Ticker_List = list()
-for i in range(len(upbitMT)) :
-    MarketTicker = list()
-    MarketTicker = ['upbit', upbitMT[i]]
-    Market_Ticker_List.append(MarketTicker)
-    MarketTicker = ['binance', binanMT[i]]
-    Market_Ticker_List.append(MarketTicker)
 
 while True :
     start = time.time()
@@ -68,8 +64,8 @@ while True :
     print("\n")
     resultDict = {}
     
-    for marketTicker in Market_Ticker_List :
-        if(marketTicker[0] == 'upbit') :
+    for marketTicker in RefinedMarkets :
+        if(1) :
             ticker = upbit.fetch_ticker(marketTicker[1]+'/KRW')
             tickerDict = {}
             name = marketTicker[1]
@@ -81,8 +77,8 @@ while True :
                 resultDict[name] = {marketTicker[0] : ticker['close'] * 0.000818}
             time.sleep(0.1)
         
-        elif(marketTicker[0] == 'binance') :
-            ticker = binance.fetch_ticker(marketTicker[1]+'/BUSD')
+        elif(marketTicker[0] == 'Binance_USDT') :
+            ticker = binance.fetch_ticker(marketTicker[1]+'/USDT')
             tickerDict = {}
             name = marketTicker[1]
             if name in resultDict :
@@ -92,8 +88,8 @@ while True :
             else :
                 resultDict[name] = {marketTicker[0] : ticker['close']}
         
-        elif(marketTicker[0] == 'binance') :
-            ticker = binance.fetch_ticker(marketTicker[1]+'/USDT')
+        elif(marketTicker[0] == 'Binance_BUSD') :
+            ticker = binance.fetch_ticker(marketTicker[1]+'/BUSD')
             tickerDict = {}
             name = marketTicker[1]
             if name in resultDict :
@@ -128,5 +124,3 @@ while True :
     now = time.localtime()
     print ("%04d/%02d/%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec))
 
-
-"""

@@ -39,7 +39,7 @@ for market in markets :
                 argsList.append(name)
         USDTMarkets[marketList[i]] = argsList
     i = i+1
-    
+
 TickerNumDict = {}
 for marketNAME, marketTickerList in USDTMarkets.items() :
     for TickerName in marketTickerList :
@@ -56,6 +56,8 @@ for marketName, marketTickerList in USDTMarkets.items() :
             argsList.append(TickerName)
     refinedUSDTMarkets[marketName] = argsList
 
+
+
 upbitMT = list()
 binanMT = list()
 upbitMT = refinedUSDTMarkets['upbit']
@@ -68,6 +70,8 @@ for i in range(0, len(upbitMT)) :
     Market_Ticker_List.append(MarketTicker)
     MarketTicker = ['binance', binanMT[i]]
     Market_Ticker_List.append(MarketTicker)
+
+print(Market_Ticker_List)
 
 while True :
     start = time.time()
