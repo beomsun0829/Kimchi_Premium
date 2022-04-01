@@ -82,6 +82,7 @@ while True :
     for marketTicker in Market_Ticker_List :
         if(marketTicker[0] == 'upbit') :
             ticker = upbit.fetch_ticker(marketTicker[1]+'/KRW')
+            print(marketTicker[1])
             tickerDict = {}
             name = marketTicker[1]
             if name in resultDict :
