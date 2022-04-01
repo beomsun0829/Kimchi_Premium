@@ -65,7 +65,7 @@ while True :
     print("-----------------------------------------")
     print("\n")
     
-    resultDict = {"init" : {"init" : "init"}}
+    resultDict = {}
     
     KRW_BTC = upbit.fetch_ticker('BTC/KRW')
     BTC_USDT = upbit.fetch_ticker('BTC/USDT')
@@ -76,7 +76,7 @@ while True :
     for marketTicker in RefinedMarkets :
         if(1) :
             ticker = upbit.fetch_ticker(marketTicker +'/KRW')
-            resultDict[marketTicker] = {"Upbit_KRW" : ticker['close']}
+            resultDict[marketTicker] = {"Upbit_KRW" : ticker['close'] * 100/TetherPrice}
             time.sleep(0.03)
         
         if(RefinedMarkets[marketTicker][0] == 'Binance_USDT') :
@@ -102,24 +102,17 @@ while True :
             
     
     for ticker, valueList in resultDict.items() :
-        minVal = 10000000.000
-        minMarket = ""
-        maxVal = -1.000
-        maxMarket = ""
-        for market, value in valueList.items() :
-            if value is not None :
-                if value < minVal :
-                    minVal = value
-                    minMarket = market
-                if value > maxVal :
-                    maxVal = value
-                    maxMarket = market
+        #get gap between Upbit_KRW and Binance_USDT
         
+        gap = valueList['Upbit_KRW'] / valueList['Binance_USDT']
+        print(ticker + " : " + str(gap))
+         
+        """
         if maxVal > 1.05 * minVal and minVal != 0:
             print(ticker, " 5% 이상 차이", "(",round((maxVal/minVal - 1)*100, 2), " %)", "| ", minMarket,"(", round(minVal, 2),")",  "| ", maxMarket, "(", round(maxVal, 2),")","\n")
         elif maxVal > 1.03 * minVal and minVal != 0:
             print(ticker, " 3% 이상 차이 ", "(",round((maxVal/minVal - 1)*100, 2), " %)", "| ", minMarket, "(",round(minVal, 2),")",  "| ", maxMarket, "(", round(maxVal, 2),")","\n")
-    
+        """    
     print("시행 완료, 소요시간 (", round(time.time() - start, 1), "초)")
     now = time.localtime()
     print ("%04d/%02d/%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec))
