@@ -6,6 +6,8 @@ import re
 import random
 import time
 
+from matplotlib.pyplot import pause
+
 upbit = ccxt.upbit()
 binance = ccxt.binance()
 
@@ -16,119 +18,104 @@ upbitmarkets = list()
 binancemarkets = list()
 upbitmarkets.append(upbit.load_markets())
 binancemarkets.append(binance.load_markets())
-USDTMarkets = {}
-KRWMarkets = {}
-marketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD']
 
-for market in upbitmarkets : 
-    argsList = list()
-    for index in marketList :
-        if index == 'Upbit_KRW' : 
-            for mktName in market.keys() :
-                if '/KRW' in mktName :
-                    name = re.sub("/KRW", "", mktName)
-                    argsList.append(name)
-            KRWMarkets[index] = argsList
 
-for market in binancemarkets :
-    argsList = list()
-    for index in marketList :
-        if index == 'Binance_USDT':
-            for mktName in market.keys() :
-                if '/USDT' in mktName :
-                    name = re.sub("/USDT", "", mktName)
-                    argsList.append(name)
-                USDTMarkets[index] = argsList
-            
-        elif index == 'Binance_BUSD':
-            for mktName in market.keys() :
-                if '/BUSD' in mktName :
-                    name = re.sub("/BUSD", "", mktName)
-                    argsList.append(name)
-                USDTMarkets[index] = argsList
-
+SymbolList = {}
 RefinedMarkets = {}
-for marketName, marketTickerList in KRWMarkets.items() :
-    for TickerName in marketTickerList :
+MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD']
+            
+def Get_Upbit_Markets() :
+    for market in upbitmarkets : 
         argsList = list()
-        if(TickerName in USDTMarkets['Binance_USDT']) :
-            argsList.append('Binance_USDT')
-        if(TickerName in USDTMarkets['Binance_BUSD']) :
-            argsList.append('Binance_BUSD')
-    
-        if(argsList != []) :
-            RefinedMarkets[TickerName] = argsList
+        for index in MarketList :
+            if index == 'Upbit_KRW' : 
+                for mktName in market.keys() :
+                    if mktName.endswith("/KRW") :
+                        name = re.sub("/KRW", "", mktName)
+                        argsList.append(name)
+                SymbolList[index] = argsList
+                
+def Get_Binance_Markets() :
+    for market in binancemarkets :
+        argsList = list()
+        for index in MarketList :
+            if index == 'Binance_USDT':
+                for mktName in market.keys() :
+                    if mktName.endswith("/USDT") :
+                        name = re.sub("/USDT", "", mktName)
+                        argsList.append(name)
+                    SymbolList[index] = argsList
+                
+            elif index == 'Binance_BUSD':
+                for mktName in market.keys() :
+                    if mktName.endswith("/BUSD") :
+                        name = re.sub("/BUSD", "", mktName)
+                        argsList.append(name)
+                    SymbolList[index] = argsList
 
+def Refine_Market() :
+    for MarketName , MarketTickerList in SymbolList.items() :
+        for ticker in MarketTickerList :
+            if ticker in RefinedMarkets.keys() :
+                if MarketName in RefinedMarkets[ticker] :
+                    continue
+                RefinedMarkets[ticker].append(MarketName)
+            else :
+                RefinedMarkets[ticker] = [MarketName]
+                
+def Get_Tether_Price() :
+    KRW_BTC = upbit.fetch_ticker('BTC/KRW')
+    BTC_USDT = upbit.fetch_ticker('BTC/USDT')
+    return KRW_BTC['last'] / BTC_USDT['last']
+
+def Fetch_Market_Ticker(MarketTicker) :
+    if len(RefinedMarkets[MarketTicker]) > 2 :
+        resultDict[MarketTicker] = {}
+        for MarketName in RefinedMarkets[MarketTicker] :
+            try :
+                if MarketName == 'Upbit_KRW' :
+                    resultDict[MarketTicker]['Upbit_KRW'] = upbit.fetch_ticker(MarketTicker + '/KRW')['close'] / TetherPrice
+                        
+                elif MarketName == 'Binance_USDT' :
+                    resultDict[MarketTicker]["Binance_USDT"] = binance.fetch_ticker(MarketTicker + '/USDT')['close']
+                        
+                elif MarketName == 'Binance_BUSD' :
+                    resultDict[MarketTicker]["Binance_BUSD"] = binance.fetch_ticker(MarketTicker + '/BUSD')['close']
+                        
+                else :
+                    continue
+            except :
+                continue
+
+Get_Upbit_Markets()
+Get_Binance_Markets()
+Refine_Market()
 
 while True :
     start = time.time()
     print("-----------------------------------------")
-    print("\n")
-    
     resultDict = {}
     
-    KRW_BTC = upbit.fetch_ticker('BTC/KRW')
-    BTC_USDT = upbit.fetch_ticker('BTC/USDT')
-    TetherPrice = KRW_BTC['last'] / BTC_USDT['last']
+    TetherPrice = Get_Tether_Price()
     
-    print("Tether Price : ", TetherPrice)
-    for marketTicker in RefinedMarkets :
-        if(1) :
-            ticker = upbit.fetch_ticker(marketTicker +'/KRW')
-            resultDict[marketTicker] = {"Upbit_KRW" : ticker['close'] / TetherPrice}
-            time.sleep(0.03)
-        
-        if(RefinedMarkets[marketTicker][0] == 'Binance_USDT') :
-            try :
-                ticker = binance.fetch_ticker(marketTicker+'/USDT')
-                resultDict[marketTicker]["Binance_USDT"] = ticker['close']
-                time.sleep(0.03)
-            except :
-                #print(marketTicker + "/USDT is not available")
-                continue
-        
-        if(len(RefinedMarkets[marketTicker]) == 1):
-            continue
-        
-        if(RefinedMarkets[marketTicker][1] == 'Binance_BUSD') :
-            try :
-                ticker = binance.fetch_ticker(marketTicker+'/BUSD')
-                resultDict[marketTicker]["Binance_BUSD"] = ticker['close']
-                time.sleep(0.03)
-            except :
-                #print(marketTicker + "/BUSD is not available")
-                continue
-            
+    for MarketTicker in RefinedMarkets :
+        Fetch_Market_Ticker(MarketTicker)
     
     for ticker, valueList in resultDict.items() :
-        #search max value in valueList but not Upbit_KRW
-        maxValue = -10000
-        maxKey = ''
-        for key, value in valueList.items() :
-            if(key == 'Upbit_KRW') :
-                continue
-            if(value > maxValue) :
-                maxValue = value
-                maxKey = key
-        
-        #search min value in valueList but not Upbit_KRW
-        minValue = 10000
-        minKey = ''
-        for key, value in valueList.items() :
-            if(key == 'Upbit_KRW') :
-                continue
-            if(value < minValue) :
-                minValue = value
-                minKey = key
+        #search max value in valueList
+        maxValue = max(valueList.values())
+        maxValue_key = max(valueList, key=valueList.get)
+        minValue = min(valueList.values())
+        minValue_key = min(valueList, key=valueList.get)
         
         try :
             if(minValue > 0 and minValue != 10000) : 
                 gap = (valueList['Upbit_KRW'] - minValue) / minValue * 100
-                gapmarket = minKey
+                gapmarket = minValue_key
                 
             elif(maxValue > 0 and maxValue != -10000) :
                 gap = (valueList['Upbit_KRW'] - maxValue) / maxValue * 100
-                gapmarket = maxKey
+                gapmarket = maxValue_key
                 
             else :
                 gap = 0
@@ -145,6 +132,7 @@ while True :
         elif abs(gap) > 1 :
             print(ticker, " 1% 이상 차이 ", "(",round(gap, 3), " %)" + " | " + gapmarket)
         
+    
     print("시행 완료, 소요시간 (", round(time.time() - start, 1), "초)")
     now = time.localtime()
     print ("%04d/%02d/%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec))
