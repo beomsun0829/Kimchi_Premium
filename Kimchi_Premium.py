@@ -108,32 +108,21 @@ while True :
         minValue = min(valueList.values())
         minValue_key = min(valueList, key=valueList.get)
         
-        try :
-            if(minValue > 0 and minValue != 10000) : 
-                gap = (valueList['Upbit_KRW'] - minValue) / minValue * 100
-                gapmarket = minValue_key
-                
-            elif(maxValue > 0 and maxValue != -10000) :
-                gap = (valueList['Upbit_KRW'] - maxValue) / maxValue * 100
-                gapmarket = maxValue_key
-                
-            else :
-                gap = 0
-    
-        except (ZeroDivisionError, KeyError) :
-            #print("ZeroDivisionError at" + ticker + "  " + str(valueList))
-            continue
-            
+        if maxValue-minValue ==  0 or minValue == 0 :
+            gap = 0
+        
+        else :
+            gap = ((maxValue/minValue) - 1) * 100
          
         if abs(gap) > 5 :
-            print(ticker, " 5% 이상 차이", "(",round(gap, 3), " %)" + " | " + gapmarket)
+            print(ticker, " 5% 이상 차이", "(",round(gap, 3), " %)" + " | " + maxValue_key + " <-> " + minValue_key)
         elif abs(gap) > 3 :
-            print(ticker, " 3% 이상 차이 ", "(",round(gap, 3), " %)" + " | " + gapmarket)
+            print(ticker, " 3% 이상 차이 ", "(",round(gap, 3), " %)" + " | " + maxValue_key + " <-> " + minValue_key)
         elif abs(gap) > 1 :
-            print(ticker, " 1% 이상 차이 ", "(",round(gap, 3), " %)" + " | " + gapmarket)
+            print(ticker, " 1% 이상 차이 ", "(",round(gap, 3), " %)" + " | " + maxValue_key + " <-> " + minValue_key)
         
     
-    print("시행 완료, 소요시간 (", round(time.time() - start, 1), "초)")
+    print("\n시행 완료, 소요시간 (", round(time.time() - start, 1), "초)")
     now = time.localtime()
     print ("%04d/%02d/%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec))
 
