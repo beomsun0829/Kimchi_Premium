@@ -106,7 +106,7 @@ while True :
         
         gap = valueList['Upbit_KRW'] / valueList['Binance_USDT']
         print(ticker + " : " + str(gap))
-         
+        
         """
         if maxVal > 1.05 * minVal and minVal != 0:
             print(ticker, " 5% 이상 차이", "(",round((maxVal/minVal - 1)*100, 2), " %)", "| ", minMarket,"(", round(minVal, 2),")",  "| ", maxMarket, "(", round(maxVal, 2),")","\n")
