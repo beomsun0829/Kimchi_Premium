@@ -2,6 +2,7 @@ import ccxt
 from ccxt.base import precise
 from ccxt.binance import binance
 from ccxt.upbit import upbit
+from ccxt.coinbasepro import coinbasepro
 import re
 import random
 import time
@@ -10,19 +11,24 @@ from matplotlib.pyplot import pause
 
 upbit = ccxt.upbit()
 binance = ccxt.binance()
+coinbasepro = ccxt.coinbasepro()
 
 upbit = ccxt.upbit({'enableRateLimit': False})
 binance = ccxt.binance({'enableRateLimit': False})
+coinbasepro = ccxt.coinbasepro({'enableRateLimit': False})
 
 upbitmarkets = list()
 binancemarkets = list()
+coinbasepromarkets = list()
 upbitmarkets.append(upbit.load_markets())
 binancemarkets.append(binance.load_markets())
+coinbasepromarkets.append(coinbasepro.load_markets())
 
+#빗썸 ftx
 
 SymbolList = {}
 RefinedMarkets = {}
-MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD']
+MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Coinbasepro_USDT']
             
 def Get_Upbit_Markets() :
     for market in upbitmarkets : 
@@ -50,6 +56,17 @@ def Get_Binance_Markets() :
                 for mktName in market.keys() :
                     if mktName.endswith("/BUSD") :
                         name = re.sub("/BUSD", "", mktName)
+                        argsList.append(name)
+                    SymbolList[index] = argsList
+
+def Get_Coinbasepro_Markets() : 
+    for market in coinbasepromarkets :
+        argsList = list()
+        for index in MarketList :
+            if index == 'Coinbasepro_USDT':
+                for mktName in market.keys() :
+                    if mktName.endswith("/USDT") :
+                        name = re.sub("/USDT", "", mktName)
                         argsList.append(name)
                     SymbolList[index] = argsList
 
@@ -81,14 +98,19 @@ def Fetch_Market_Ticker(MarketTicker) :
                         
                 elif MarketName == 'Binance_BUSD' :
                     resultDict[MarketTicker]["Binance_BUSD"] = binance.fetch_ticker(MarketTicker + '/BUSD')['close']
-                        
+
+                elif MarketName == 'Coinbasepro_USDT' :
+                    resultDict[MarketTicker]["Coinbasepro_USDT"] = coinbasepro.fetch_ticker(MarketTicker + '/USDT')['close']
+                
                 else :
                     continue
             except :
                 continue
+            
 
 Get_Upbit_Markets()
 Get_Binance_Markets()
+Get_Coinbasepro_Markets()
 Refine_Market()
 
 while True :
@@ -102,7 +124,12 @@ while True :
         Fetch_Market_Ticker(MarketTicker)
     
     for ticker, valueList in resultDict.items() :
-        #search max value in valueList
+        
+        #remove nonetype data in valuelist
+        for x in list(valueList) :
+            if valueList[x] == None :
+                valueList.pop(x)
+        
         maxValue = max(valueList.values())
         maxValue_key = max(valueList, key=valueList.get)
         minValue = min(valueList.values())
@@ -115,11 +142,11 @@ while True :
             gap = ((maxValue/minValue) - 1) * 100
          
         if abs(gap) > 5 :
-            print(ticker, " 5% 이상 차이", "(",round(gap, 3), " %)" + " | " + maxValue_key + " <-> " + minValue_key)
+            print(ticker, " 5% 이상 차이", "(",round(gap, 3), " %)" + " | " + minValue_key + " <-> " + maxValue_key)
         elif abs(gap) > 3 :
-            print(ticker, " 3% 이상 차이 ", "(",round(gap, 3), " %)" + " | " + maxValue_key + " <-> " + minValue_key)
+            print(ticker, " 3% 이상 차이 ", "(",round(gap, 3), " %)" + " | " + minValue_key + " <-> " + maxValue_key)
         elif abs(gap) > 1 :
-            print(ticker, " 1% 이상 차이 ", "(",round(gap, 3), " %)" + " | " + maxValue_key + " <-> " + minValue_key)
+            print(ticker, " 1% 이상 차이 ", "(",round(gap, 3), " %)" + " | " + minValue_key + " <-> " + maxValue_key)
         
     
     print("\n시행 완료, 소요시간 (", round(time.time() - start, 1), "초)")
