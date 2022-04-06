@@ -215,7 +215,7 @@ while True :
         else :
             gap = ((maxValue/minValue) - 1) * 100
         
-        if minValue_key[:6] == 'Binance' and maxValue_key[:6] == 'Binance' :
+        if minValue_key[:7] == 'Binance' and maxValue_key[:7] == 'Binance' :
             continue
         elif abs(gap) > 5 :
             print(ticker, " 5% 이상 차이", "(",round(gap, 3), " %)" + " | " + minValue_key + " <-> " + maxValue_key)
