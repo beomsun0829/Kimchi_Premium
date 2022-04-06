@@ -36,6 +36,7 @@ ftxmarkets.append(ftx.load_markets())
 SymbolList = {}
 RefinedMarkets = {}
 MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Coinbasepro_USDT','Bithumb_KRW','Ftx_USD']
+Ticker_Exception = ['XNO']
             
 def Get_Upbit_Markets() :
     for market in upbitmarkets : 
@@ -92,10 +93,10 @@ def Get_Ftx_Markets():
     for market in ftxmarkets :
         argsList = list()
         for index in MarketList :
-            if index == 'Ftx_USDT':
+            if index == 'Ftx_USD':
                 for mktName in market.keys() :
-                    if mktName.endswith("/USDT") :
-                        name = re.sub("/USDT", "", mktName)
+                    if mktName.endswith("/USD") :
+                        name = re.sub("/USD", "", mktName)
                         argsList.append(name)
                     SymbolList[index] = argsList
 
@@ -160,7 +161,12 @@ while True :
     for MarketTicker in RefinedMarkets :
         Fetch_Market_Ticker(MarketTicker)
     
+    print(resultDict)
+    
     for ticker, valueList in resultDict.items() :
+        #Ticker exception
+        if ticker in Ticker_Exception :
+            continue
         
         #remove nonetype data in valuelist
         for x in list(valueList) :
