@@ -6,6 +6,7 @@ from ccxt.upbit import upbit
 from ccxt.coinbasepro import coinbasepro
 from ccxt.bithumb import bithumb
 from ccxt.ftx import ftx
+from ccxt.huobipro import huobipro
 
 import re
 import random
@@ -18,24 +19,26 @@ binance = ccxt.binance({'enableRateLimit': False})
 coinbasepro = ccxt.coinbasepro({'enableRateLimit': False})
 bithumb = ccxt.bithumb({'enableRateLimit': False})
 ftx = ccxt.ftx({'enableRateLimit': False})
+huobipro = ccxt.huobipro({'enableRateLimit': False})
 
 upbitmarkets = list()
 binancemarkets = list()
 coinbasepromarkets = list()
 bithumbmarkets = list()
 ftxmarkets = list()
+huobipromarkets = list()
 
 upbitmarkets.append(upbit.load_markets())
 binancemarkets.append(binance.load_markets())
 coinbasepromarkets.append(coinbasepro.load_markets())
 bithumbmarkets.append(bithumb.load_markets())
 ftxmarkets.append(ftx.load_markets())
-
-#빗썸 ftx
+huobipromarkets.append(huobipro.load_markets())
 
 SymbolList = {}
 RefinedMarkets = {}
-MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Coinbasepro_USDT','Bithumb_KRW','Ftx_USD']
+
+MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Binance_BTC','Coinbasepro_USDT','Bithumb_KRW','Ftx_USD','Huobipro_USDT']
 Ticker_Exception = ['XNO']
             
 def Get_Upbit_Markets() :
@@ -64,6 +67,13 @@ def Get_Binance_Markets() :
                 for mktName in market.keys() :
                     if mktName.endswith("/BUSD") :
                         name = re.sub("/BUSD", "", mktName)
+                        argsList.append(name)
+                    SymbolList[index] = argsList
+            
+            elif index == 'Binance_BTC':
+                for mktName in market.keys() :
+                    if mktName.endswith("/BTC") :
+                        name = re.sub("/BTC", "", mktName)
                         argsList.append(name)
                     SymbolList[index] = argsList
 
@@ -100,6 +110,17 @@ def Get_Ftx_Markets():
                         argsList.append(name)
                     SymbolList[index] = argsList
 
+def Get_Huobipro_Markets():
+    for market in huobipromarkets :
+        argsList = list()
+        for index in MarketList :
+            if index == 'Huobipro_USDT':
+                for mktName in market.keys() :
+                    if mktName.endswith("/USDT") :
+                        name = re.sub("/USDT", "", mktName)
+                        argsList.append(name)
+                    SymbolList[index] = argsList
+
 def Refine_Market() :
     for MarketName , MarketTickerList in SymbolList.items() :
         for ticker in MarketTickerList :
@@ -115,7 +136,11 @@ def Get_Tether_Price() :
     BTC_USDT = upbit.fetch_ticker('BTC/USDT')
     return KRW_BTC['last'] / BTC_USDT['last']
 
+def Get_BTC_Price() :
+    return binance.fetch_ticker('BTC/USDT')['close']
+
 def Fetch_Market_Ticker(MarketTicker) :
+    BTC_USDT = Get_BTC_Price()
     if len(RefinedMarkets[MarketTicker]) > 2 :
         resultDict[MarketTicker] = {}
         for MarketName in RefinedMarkets[MarketTicker] :
@@ -129,6 +154,9 @@ def Fetch_Market_Ticker(MarketTicker) :
                 elif MarketName == 'Binance_BUSD' :
                     resultDict[MarketTicker]["Binance_BUSD"] = binance.fetch_ticker(MarketTicker + '/BUSD')['close']
 
+                elif MarketName == 'Binance_BTC' :
+                    resultDict[MarketTicker]["Binance_BTC"] = binance.fetch_ticker(MarketTicker + '/BTC')['close'] * BTC_USDT
+
                 elif MarketName == 'Coinbasepro_USDT' :
                     resultDict[MarketTicker]["Coinbasepro_USDT"] = coinbasepro.fetch_ticker(MarketTicker + '/USDT')['close']
                 
@@ -137,6 +165,9 @@ def Fetch_Market_Ticker(MarketTicker) :
                 
                 elif MarketName == 'Ftx_USD' :
                     resultDict[MarketTicker]["Ftx_USD"] = ftx.fetch_ticker(MarketTicker + '/USD')['close']
+
+                elif MarketName == 'Huobipro_USDT' :
+                    resultDict[MarketTicker]["Huobipro_USDT"] = huobipro.fetch_ticker(MarketTicker + '/USDT')['close']
                     
                 else :
                     continue
@@ -149,6 +180,8 @@ Get_Binance_Markets()
 Get_Coinbasepro_Markets()
 Get_Bithumb_Markets()
 Get_Ftx_Markets()
+Get_Huobipro_Markets()
+
 Refine_Market()
 
 while True :
