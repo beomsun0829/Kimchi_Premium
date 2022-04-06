@@ -161,8 +161,6 @@ while True :
     for MarketTicker in RefinedMarkets :
         Fetch_Market_Ticker(MarketTicker)
     
-    print(resultDict)
-    
     for ticker, valueList in resultDict.items() :
         #Ticker exception
         if ticker in Ticker_Exception :
