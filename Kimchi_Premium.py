@@ -5,6 +5,8 @@ from ccxt.binance import binance
 from ccxt.upbit import upbit
 from ccxt.coinbasepro import coinbasepro
 from ccxt.bithumb import bithumb
+from ccxt.ftx import ftx
+
 import re
 import random
 import time
@@ -33,7 +35,7 @@ ftxmarkets.append(ftx.load_markets())
 
 SymbolList = {}
 RefinedMarkets = {}
-MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Coinbasepro_USDT','Bithumb_KRW','Ftx_USDT']
+MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Coinbasepro_USDT','Bithumb_KRW','Ftx_USD']
             
 def Get_Upbit_Markets() :
     for market in upbitmarkets : 
@@ -130,10 +132,10 @@ def Fetch_Market_Ticker(MarketTicker) :
                     resultDict[MarketTicker]["Coinbasepro_USDT"] = coinbasepro.fetch_ticker(MarketTicker + '/USDT')['close']
                 
                 elif MarketName == 'Bithumb_KRW' :
-                    resultDict[MarketTicker]['Bithumb_KRW'] = upbit.fetch_ticker(MarketTicker + '/KRW')['close'] / TetherPrice
+                    resultDict[MarketTicker]['Bithumb_KRW'] = bithumb.fetch_ticker(MarketTicker + '/KRW')['close'] / TetherPrice
                 
-                elif MarketName == 'Ftx_USDT' :
-                    resultDict[MarketTicker]["Ftx_USDT"] = coinbasepro.fetch_ticker(MarketTicker + '/USDT')['close']
+                elif MarketName == 'Ftx_USD' :
+                    resultDict[MarketTicker]["Ftx_USD"] = ftx.fetch_ticker(MarketTicker + '/USD')['close']
                     
                 else :
                     continue
