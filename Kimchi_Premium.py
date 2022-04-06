@@ -1,34 +1,39 @@
 import ccxt
 from ccxt.base import precise
+
 from ccxt.binance import binance
 from ccxt.upbit import upbit
 from ccxt.coinbasepro import coinbasepro
+from ccxt.bithumb import bithumb
 import re
 import random
 import time
 
 from matplotlib.pyplot import pause
 
-upbit = ccxt.upbit()
-binance = ccxt.binance()
-coinbasepro = ccxt.coinbasepro()
-
 upbit = ccxt.upbit({'enableRateLimit': False})
 binance = ccxt.binance({'enableRateLimit': False})
 coinbasepro = ccxt.coinbasepro({'enableRateLimit': False})
+bithumb = ccxt.bithumb({'enableRateLimit': False})
+ftx = ccxt.ftx({'enableRateLimit': False})
 
 upbitmarkets = list()
 binancemarkets = list()
 coinbasepromarkets = list()
+bithumbmarkets = list()
+ftxmarkets = list()
+
 upbitmarkets.append(upbit.load_markets())
 binancemarkets.append(binance.load_markets())
 coinbasepromarkets.append(coinbasepro.load_markets())
+bithumbmarkets.append(bithumb.load_markets())
+ftxmarkets.append(ftx.load_markets())
 
 #빗썸 ftx
 
 SymbolList = {}
 RefinedMarkets = {}
-MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Coinbasepro_USDT']
+MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Coinbasepro_USDT','Bithumb_KRW','Ftx_USDT']
             
 def Get_Upbit_Markets() :
     for market in upbitmarkets : 
@@ -70,6 +75,28 @@ def Get_Coinbasepro_Markets() :
                         argsList.append(name)
                     SymbolList[index] = argsList
 
+def Get_Bithumb_Markets() : 
+    for market in bithumbmarkets :
+        argsList = list()
+        for index in MarketList :
+            if index == 'Bithumb_KRW':
+                for mktName in market.keys() :
+                    if mktName.endswith("/KRW") :
+                        name = re.sub("/KRW", "", mktName)
+                        argsList.append(name)
+                    SymbolList[index] = argsList
+
+def Get_Ftx_Markets():
+    for market in ftxmarkets :
+        argsList = list()
+        for index in MarketList :
+            if index == 'Ftx_USDT':
+                for mktName in market.keys() :
+                    if mktName.endswith("/USDT") :
+                        name = re.sub("/USDT", "", mktName)
+                        argsList.append(name)
+                    SymbolList[index] = argsList
+
 def Refine_Market() :
     for MarketName , MarketTickerList in SymbolList.items() :
         for ticker in MarketTickerList :
@@ -102,6 +129,12 @@ def Fetch_Market_Ticker(MarketTicker) :
                 elif MarketName == 'Coinbasepro_USDT' :
                     resultDict[MarketTicker]["Coinbasepro_USDT"] = coinbasepro.fetch_ticker(MarketTicker + '/USDT')['close']
                 
+                elif MarketName == 'Bithumb_KRW' :
+                    resultDict[MarketTicker]['Bithumb_KRW'] = upbit.fetch_ticker(MarketTicker + '/KRW')['close'] / TetherPrice
+                
+                elif MarketName == 'Ftx_USDT' :
+                    resultDict[MarketTicker]["Ftx_USDT"] = coinbasepro.fetch_ticker(MarketTicker + '/USDT')['close']
+                    
                 else :
                     continue
             except :
@@ -111,6 +144,8 @@ def Fetch_Market_Ticker(MarketTicker) :
 Get_Upbit_Markets()
 Get_Binance_Markets()
 Get_Coinbasepro_Markets()
+Get_Bithumb_Markets()
+Get_Ftx_Markets()
 Refine_Market()
 
 while True :
