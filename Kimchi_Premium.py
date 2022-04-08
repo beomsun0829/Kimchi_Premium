@@ -6,7 +6,7 @@ from ccxt.upbit import upbit
 from ccxt.coinbasepro import coinbasepro
 from ccxt.bithumb import bithumb
 from ccxt.ftx import ftx
-from ccxt.huobipro import huobipro
+from ccxt.huobi import huobi
 
 import re
 import random
@@ -19,26 +19,26 @@ binance = ccxt.binance({'enableRateLimit': False})
 coinbasepro = ccxt.coinbasepro({'enableRateLimit': False})
 bithumb = ccxt.bithumb({'enableRateLimit': False})
 ftx = ccxt.ftx({'enableRateLimit': False})
-huobipro = ccxt.huobipro({'enableRateLimit': False})
+huobi = ccxt.huobi({'enableRateLimit': False})
 
 upbitmarkets = list()
 binancemarkets = list()
 coinbasepromarkets = list()
 bithumbmarkets = list()
 ftxmarkets = list()
-huobipromarkets = list()
+huobimarkets = list()
 
 upbitmarkets.append(upbit.load_markets())
 binancemarkets.append(binance.load_markets())
 coinbasepromarkets.append(coinbasepro.load_markets())
 bithumbmarkets.append(bithumb.load_markets())
 ftxmarkets.append(ftx.load_markets())
-huobipromarkets.append(huobipro.load_markets())
+huobimarkets.append(huobi.load_markets())
 
 SymbolList = {}
 RefinedMarkets = {}
 
-MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Binance_BTC','Coinbasepro_USDT','Bithumb_KRW','Ftx_USD','Huobipro_USDT']
+MarketList = ['Upbit_KRW','Binance_USDT','Binance_BUSD','Binance_BTC','Coinbasepro_USDT','Bithumb_KRW','Ftx_USD','huobi_USDT']
 Ticker_Exception = ['XNO']
             
 def Get_Upbit_Markets() :
@@ -110,11 +110,11 @@ def Get_Ftx_Markets():
                         argsList.append(name)
                     SymbolList[index] = argsList
 
-def Get_Huobipro_Markets():
-    for market in huobipromarkets :
+def Get_huobi_Markets():
+    for market in huobimarkets :
         argsList = list()
         for index in MarketList :
-            if index == 'Huobipro_USDT':
+            if index == 'huobi_USDT':
                 for mktName in market.keys() :
                     if mktName.endswith("/USDT") :
                         name = re.sub("/USDT", "", mktName)
@@ -166,8 +166,8 @@ def Fetch_Market_Ticker(MarketTicker) :
                 elif MarketName == 'Ftx_USD' :
                     resultDict[MarketTicker]["Ftx_USD"] = ftx.fetch_ticker(MarketTicker + '/USD')['close']
 
-                elif MarketName == 'Huobipro_USDT' :
-                    resultDict[MarketTicker]["Huobipro_USDT"] = huobipro.fetch_ticker(MarketTicker + '/USDT')['close']
+                elif MarketName == 'huobi_USDT' :
+                    resultDict[MarketTicker]["huobi_USDT"] = huobi.fetch_ticker(MarketTicker + '/USDT')['close']
                     
                 else :
                     continue
@@ -180,7 +180,7 @@ Get_Binance_Markets()
 Get_Coinbasepro_Markets()
 Get_Bithumb_Markets()
 Get_Ftx_Markets()
-Get_Huobipro_Markets()
+Get_huobi_Markets()
 
 Refine_Market()
 
@@ -193,6 +193,7 @@ while True :
     
     for MarketTicker in RefinedMarkets :
         Fetch_Market_Ticker(MarketTicker)
+
     
     for ticker, valueList in resultDict.items() :
         #Ticker exception
