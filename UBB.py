@@ -4,13 +4,15 @@ from ccxt.base import precise
 from ccxt.binance import binance
 from ccxt.upbit import upbit
 from ccxt.bithumb import bithumb
+import requests
 
-import telegram
 import re
 import random
 import time
-import dotenv
 import os
+from dotenv import load_dotenv
+load_dotenv(verbose=True)
+import telegram
 
 from matplotlib.pyplot import pause
 binance = ccxt.binance({'enableRateLimit': False})
@@ -19,6 +21,7 @@ bithumb = ccxt.bithumb({'enableRateLimit': False})
 
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
+bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 binancemarkets = list()
 upbitmarkets = list()
@@ -105,7 +108,6 @@ def Fetch_Market_Ticker(MarketTicker) :
                 continue
 
 def Send_Telegram(message) :
-    bot = telegram.Bot(token=TELEGRAM_TOKEN)
     bot.send_message(chat_id=CHAT_ID, text=message)
 
 Get_Binance_Markets()
@@ -117,7 +119,6 @@ Refine_Market()
 while True :
     message = ""
     start = time.time()
-    print("-----------------------------------------")
     message += "-----------------------------------------\n"
     resultDict = {}
     
