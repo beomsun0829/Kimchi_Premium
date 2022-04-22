@@ -130,7 +130,7 @@ def Refine_Market() :
                 RefinedMarkets[ticker].append(MarketName)
             else :
                 RefinedMarkets[ticker] = [MarketName]
-                
+
 def Get_Tether_Price() :
     KRW_BTC = upbit.fetch_ticker('BTC/KRW')
     BTC_USDT = upbit.fetch_ticker('BTC/USDT')
