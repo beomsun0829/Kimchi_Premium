@@ -118,6 +118,7 @@ Refine_Market()
 
 while True :
     message = ""
+    counter = 0
     start = time.time()
     resultDict = {}
     
@@ -153,16 +154,22 @@ while True :
             continue
         elif abs(gap) > 3 :
             message += (ticker + " | 3% 이상 차이 " + "( " + str(round(gap, 3)) + " % )" + " | " + minValue_key + " -> " + maxValue_key + "\n")
+            counter = counter + 1
         elif abs(gap) > 1.5 :
             message += (ticker + " | 1.5% 이상 차이 " + "( " + str(round(gap, 3)) + " % )" + " | " + minValue_key + " -> " + maxValue_key + "\n")
+            counter = counter + 1
+    
+    if counter > 0:
+    
+        print("\n시행 완료, 소요시간 (" + str(round(time.time() - start, 1)) +  "초)" + "\n")
+        now = time.localtime()
+        print("%04d/%02d/%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec) + "\n")
         
+        message += ("Tether Price : " + str(round(TetherPrice,3)) + "\n")
+        Send_Telegram(message)
+        print(message)
     
-    message += ("\n시행 완료, 소요시간 (" + str(round(time.time() - start, 1)) +  "초)" + "\n")
-    now = time.localtime()
-    message += ("%04d/%02d/%02d %02d:%02d:%02d" % (now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min, now.tm_sec) + "\n")
-    
-    message += ("Tether Price : " + str(TetherPrice) + "\n")
-    Send_Telegram(message)
-    print(message)
+    else :
+        print("\n시행 완료, 소요시간 (" + str(round(time.time() - start, 1)) +  "초)" + "\n")
     
    
