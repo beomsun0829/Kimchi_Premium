@@ -136,6 +136,9 @@ while True :
         for x in list(valueList) :
             if valueList[x] == None :
                 valueList.pop(x)
+                
+        if len(valueList) == 0 :
+            continue
         
         maxValue = max(valueList.values())
         maxValue_key = max(valueList, key=valueList.get)
