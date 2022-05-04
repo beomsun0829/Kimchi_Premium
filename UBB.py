@@ -13,6 +13,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv(verbose=True)
 import telegram
+import config
 
 from matplotlib.pyplot import pause
 binance = ccxt.binance({'enableRateLimit': False})
@@ -35,7 +36,8 @@ SymbolList = {}
 RefinedMarkets = {}
 
 MarketList = ['Binance_USDT','Upbit_KRW','Bithumb_KRW']
-Ticker_Exception = ['XNO','XEM','WTC','AION']
+Ticker_Exception = config.TICKER_EXCEPTION
+print(Ticker_Exception)
 
 
 def Get_Binance_Markets() :
